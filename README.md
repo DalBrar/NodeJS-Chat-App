@@ -8,4 +8,4 @@ A chat application using Node.js, Express, and Socket.io.
 - Serve-favicon
 
 ## To Run
-Once dependencies, if on a linus system with TMux installed you can run ./start.sh, or `nodejs index.js`
+Once dependencies installed, if on a linus system with TMux installed you can run ./start.sh, or `nodejs index.js`
