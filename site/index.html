@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="/site/style.css">
+	<title>Socket.IO chat</title>
+</head>
+<body>
+	<div id="flex-container">
+		<div id="header">
+			<h1>Dal Brar's Chat App</h1>
+			<div id="users"></div>
+		</div>
+		<div id="messages"></div>
+		<form action="">
+			<span id="nameplate">You are:<br><span id="name"></span></span><input id="m" autocomplete="off" autofocus /><button>Send</button>
+		</form>
+	</div>
+	
+	<script src="/socket.io/socket.io.js"></script>
+	<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+	<script>
+		$(function () {
+			var socket = io();
+			
+			// check if cookies exist
+			var cookie_name = document.cookie.replace(/(?:(?:^|.*;\s*)name\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+			var cookie_color = document.cookie.replace(/(?:(?:^|.*;\s*)color\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+			
+			if (cookie_name != '') {
+				socket.emit('chat message', '/nick ' + cookie_name);
+			};
+			if (cookie_color != '') {
+				socket.emit('chat message', '/nickcolor ' + cookie_color);
+			};
+			
+			$('form').submit(function(e){
+				e.preventDefault(); // prevents page reloading
+				socket.emit('chat message', $('#m').val());
+				$('#m').val('');
+				return false;
+			});
+			
+			socket.on('update nickname', function(data){
+				$('#name').html(data.msg);
+				document.cookie = "name=" + data.name;
+				document.cookie = "color=" + data.color;
+			});
+			
+			socket.on('update users', function(msg){
+				$('#users').text(msg);
+			});
+			
+			socket.on('bc-connect', function(msg){
+				$('#messages').append($('<div class="bc connect">').text(msg));
+				scrollMsgs();
+			});
+			
+			socket.on('bc-disconnect', function(msg){
+				$('#messages').append($('<div class="bc disconnect">').text(msg));
+				scrollMsgs();
+			});
+			
+			socket.on('chat message', function(data){
+				$('#messages').append($('<div class="msg">').html(data.msg));
+				scrollMsgs();
+			});
+			
+			socket.on('you message', function(data){
+				$('#messages').append($('<div class="you">').html(data.msg));
+				scrollMsgs();
+			});
+			
+			socket.on('info', function(msg){
+				$('#messages').append($('<div class="info">').html(msg));
+				scrollMsgs();
+			});
+		});
+		
+		function scrollMsgs() {
+			var msgs = document.getElementById("messages");
+			msgs.scrollTop = msgs.scrollHeight;
+		};
+	</script>
+</body>
+</html>
